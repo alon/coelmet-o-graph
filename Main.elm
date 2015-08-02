@@ -14,6 +14,7 @@ main =
         , view = view
         }
 
+-- ((((  Model ))))
 
 type alias Model =
     { year : Maybe Int
@@ -31,6 +32,18 @@ init =
     , column = Nothing
     }
 
+
+modelFilename : Model -> Maybe String
+modelFilename model =
+    case (model.year, model.month, model.day, model.column) of
+        (Just year, Just month, Just day, Just column) ->
+            Just "GOOD ONE"
+
+        _ ->
+            Nothing
+
+
+-- (((( Action ))))
 
 type Action
     = Noop
@@ -105,7 +118,6 @@ view address model =
         [ input
             [ id "model-year"
             , placeholder "Year"
-            , autofocus True
             , value (maybeIntToString model.year)
             , name "year"
             , on "input" targetValue (yearSetter address)
@@ -114,7 +126,6 @@ view address model =
         , input
             [ id "model-month"
             , placeholder "Month"
-            , autofocus True
             , value (maybeIntToString model.month)
             , name "month"
             , on "input" targetValue (Signal.message address << SetMonth << toMaybeInt)
@@ -123,18 +134,32 @@ view address model =
         , input
             [ id "model-day"
             , placeholder "Day"
-            , autofocus True
             , value (maybeIntToString model.day)
             , name "day"
+            , on "input" targetValue (Signal.message address << SetDay << toMaybeInt)
             ]
             []
         , input
             [ id "model-column"
             , placeholder "Column"
-            , autofocus True
             , value (maybeIntToString model.column)
             , name "column"
+            , on "input" targetValue (Signal.message address << SetColumn << toMaybeInt)
             ]
             []
+            {--
+        , text "#"
         , text (toString model.year)
+        , text "#"
+        , text (toString model.month)
+        , text "#"
+        , text (toString model.day)
+        , text "#"
+        , text (toString model.column)
+        --}
+        , text (case modelFilename model of
+                Nothing
+                    -> ""
+                Just filename
+                    -> filename)
         ]
