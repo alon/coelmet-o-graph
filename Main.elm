@@ -7,6 +7,8 @@ import Html.Events exposing (on, targetValue)
 import Signal exposing (Signal, Address, Message)
 import String exposing (toInt)
 
+import Util exposing (formatNumber)
+
 main =
     StartApp.start
         { model = init
@@ -35,12 +37,15 @@ init =
 
 modelFilename : Model -> Maybe String
 modelFilename model =
-    case (model.year, model.month, model.day, model.column) of
-        (Just year, Just month, Just day, Just column) ->
-            Just "GOOD ONE"
-
-        _ ->
-            Nothing
+    let
+        f2 : Int -> String
+        f2 = formatNumber 2 "0"
+    in
+        case (model.year, model.month, model.day, model.column) of
+            (Just year, Just month, Just day, Just column) ->
+                Just ("LG" ++ f2 year ++ f2 month ++ f2 day ++ ".CSV")
+            _ ->
+                Nothing
 
 
 -- (((( Action ))))
