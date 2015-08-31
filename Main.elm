@@ -1,20 +1,21 @@
 module Main where
 
-import StartApp
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, targetValue)
-import Signal exposing (Signal, Address, Message)
+import Signal exposing (..)
 import String exposing (toInt)
+-- import Task exposing (..)
 
 import Util exposing (formatNumber)
 
+main : Signal Html
 main =
-    StartApp.start
-        { model = init
-        , update = update
-        , view = view
-        }
+    Signal.map view model
+
+model : Signal Model
+model =
+    Signal.foldp update init actions.signal
 
 -- ((((  Model ))))
 
@@ -51,17 +52,20 @@ modelFilename model =
 -- (((( Action ))))
 
 type Action
-    = Noop
+    = NoOp
     | SetYear (Maybe Int)
     | SetMonth (Maybe Int)
     | SetDay (Maybe Int)
     | SetColumn (Maybe Int)
 
+actions : Signal.Mailbox Action
+actions =
+    Signal.mailbox NoOp
 
 update : Action -> Model -> Model
 update action model =
     case action of
-        Noop ->
+        NoOp ->
             model
 
         SetYear maybeYear ->
@@ -107,7 +111,7 @@ doIfInt actionMaker address str =
 
         _ -> case toInt str of
             Err _ ->
-                Signal.message address Noop
+                Signal.message address NoOp
 
             Ok n ->
                 Signal.message address (actionMaker (Just n))
@@ -116,8 +120,8 @@ yearSetter: Address Action -> String -> Message
 yearSetter address =
     doIfInt (SetYear) address
 
-view : Address Action -> Model -> Html
-view address model =
+view : Model -> Html
+view model =
     div
         []
         [ input
@@ -125,7 +129,7 @@ view address model =
             , placeholder "Year"
             , value (maybeIntToString model.year)
             , name "year"
-            , on "input" targetValue (yearSetter address)
+            , on "input" targetValue (yearSetter actions.address)
             ]
             []
         , input
@@ -133,7 +137,7 @@ view address model =
             , placeholder "Month"
             , value (maybeIntToString model.month)
             , name "month"
-            , on "input" targetValue (Signal.message address << SetMonth << toMaybeInt)
+            , on "input" targetValue (Signal.message actions.address << SetMonth << toMaybeInt)
             ]
             []
         , input
@@ -141,7 +145,7 @@ view address model =
             , placeholder "Day"
             , value (maybeIntToString model.day)
             , name "day"
-            , on "input" targetValue (Signal.message address << SetDay << toMaybeInt)
+            , on "input" targetValue (Signal.message actions.address << SetDay << toMaybeInt)
             ]
             []
         , input
@@ -149,7 +153,7 @@ view address model =
             , placeholder "Column"
             , value (maybeIntToString model.column)
             , name "column"
-            , on "input" targetValue (Signal.message address << SetColumn << toMaybeInt)
+            , on "input" targetValue (Signal.message actions.address << SetColumn << toMaybeInt)
             ]
             []
             {--
