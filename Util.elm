@@ -11,4 +11,4 @@ formatNumber digits filler a =
 
 digitsOf : Int -> Int
 digitsOf =
-    ((+) 1) << round << logBase 10 << toFloat
+    ((+) 1) << floor << logBase 10 << toFloat
