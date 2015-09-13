@@ -10,6 +10,7 @@ import Signal exposing (..)
 import String exposing (toInt)
 
 import Util exposing (formatNumber)
+import CSV
 
 main : Signal Html
 main =
@@ -26,7 +27,7 @@ type alias Model =
     , month : Maybe Int
     , day : Maybe Int
     , column : Maybe Int -- reduce to actual permissible set
-    , contents : String
+    , contents : List (List String)
     }
 
 
@@ -36,7 +37,7 @@ init =
     , month = Nothing
     , day = Nothing
     , column = Nothing
-    , contents = ""
+    , contents = []
     }
 
 
@@ -95,7 +96,7 @@ update action model =
 
         GotResponse str ->
             { model |
-                contents <- str
+                contents <- CSV.parse str
             }
 
 maybeIntToString : Maybe Int -> String
@@ -198,5 +199,5 @@ view model =
                     -> ""
                 Just filename
                     -> filename)
-        , div [] [text model.contents]
+        , div [] (List.map (\ll -> div [] (List.map (\l -> div [] [text l]) ll)) model.contents)
         ]
