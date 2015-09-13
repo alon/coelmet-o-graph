@@ -1,5 +1,8 @@
 module Main where
 
+import Maybe exposing (withDefault)
+import Http exposing (getString)
+import Task exposing (Task, andThen)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, targetValue)
@@ -24,6 +27,7 @@ type alias Model =
     , month : Maybe Int
     , day : Maybe Int
     , column : Maybe Int -- reduce to actual permissible set
+    , contents : String
     }
 
 
@@ -33,6 +37,7 @@ init =
     , month = Nothing
     , day = Nothing
     , column = Nothing
+    , contents = ""
     }
 
 
@@ -57,6 +62,7 @@ type Action
     | SetMonth (Maybe Int)
     | SetDay (Maybe Int)
     | SetColumn (Maybe Int)
+    | GotResponse String
 
 actions : Signal.Mailbox Action
 actions =
@@ -88,6 +94,11 @@ update action model =
                 column <- maybeColumn
             }
 
+        GotResponse str ->
+            { model |
+                contents <- str
+            }
+
 maybeIntToString : Maybe Int -> String
 maybeIntToString maybe_num =
     case maybe_num of
@@ -116,9 +127,38 @@ doIfInt actionMaker address str =
             Ok n ->
                 Signal.message address (actionMaker (Just n))
 
+
 yearSetter: Address Action -> String -> Message
 yearSetter address =
     doIfInt (SetYear) address
+
+
+filename : Signal String
+filename =
+        Signal.filterMap modelFilename "" model
+
+
+origin : String
+origin =
+        -- "http://logger.comet-me.org/tuba/"
+        "http://localhost:8000/csv/"
+
+getCometFile : String -> Task Http.Error String
+getCometFile filename =
+        Http.getString (origin ++ filename)
+
+
+port requests : Signal (Task Http.Error ())
+port requests =
+        -- Signal.constant 10
+        -- filename |> Signal.map (\filen -> (getCometFile filen) `andThen` updateModelContents)
+        Signal.map (\filen -> (getCometFile filen) `andThen` updateModelContents) filename
+
+
+updateModelContents : String -> Task Http.Error ()
+updateModelContents contents =
+        Signal.send actions.address (GotResponse contents)
+
 
 view : Model -> Html
 view model =
@@ -171,4 +211,5 @@ view model =
                     -> ""
                 Just filename
                     -> filename)
+        , div [] [text model.contents]
         ]
