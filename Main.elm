@@ -8,7 +8,6 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (on, targetValue)
 import Signal exposing (..)
 import String exposing (toInt)
--- import Task exposing (..)
 
 import Util exposing (formatNumber)
 
@@ -150,9 +149,7 @@ getCometFile filename =
 
 port requests : Signal (Task Http.Error ())
 port requests =
-        -- Signal.constant 10
-        -- filename |> Signal.map (\filen -> (getCometFile filen) `andThen` updateModelContents)
-        Signal.map (\filen -> (getCometFile filen) `andThen` updateModelContents) filename
+        filename |> Signal.map (\filen -> (getCometFile filen) `andThen` updateModelContents)
 
 
 updateModelContents : String -> Task Http.Error ()
@@ -196,16 +193,6 @@ view model =
             , on "input" targetValue (Signal.message actions.address << SetColumn << toMaybeInt)
             ]
             []
-            {--
-        , text "#"
-        , text (toString model.year)
-        , text "#"
-        , text (toString model.month)
-        , text "#"
-        , text (toString model.day)
-        , text "#"
-        , text (toString model.column)
-        --}
         , text (case modelFilename model of
                 Nothing
                     -> ""
