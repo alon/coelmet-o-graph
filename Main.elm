@@ -199,5 +199,5 @@ view model =
                     -> ""
                 Just filename
                     -> filename)
-        , div [] (List.map (\ll -> div [] (List.map (\l -> div [] [text l]) ll)) model.contents)
+        , div [] (List.map (\ll -> div [class "row"] (List.map (\l -> div [class "cell"] [text l]) ll)) model.contents)
         ]
