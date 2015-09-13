@@ -135,7 +135,7 @@ yearSetter address =
 
 filename : Signal String
 filename =
-        Signal.filterMap modelFilename "" model
+        Signal.dropRepeats (Signal.filterMap modelFilename "" model)
 
 
 origin : String
